@@ -70,13 +70,18 @@ Killed by SIGTERM
 **解决**：用 `-x` 精确匹配进程名，或者把模式写成不会匹配自身的正则：
 
 ```bash
-pkill -x firefox
 pkill -x msedge
+# Firefox 主进程的 comm 常常是 firefox-bin，两个都要覆盖
+pkill -x firefox-bin || pkill -x firefox
 # 或者
 pkill -f '[m]sedge'
 ```
 
 `[m]sedge` 是经典技巧：正则本身不含连续的 `msedge` 字面量，不会匹配到自己。
+
+> **补记（第二次同步时发现）**：Linux 上 Firefox 主进程的 `comm` 是 `firefox-bin`，不是 `firefox`。
+> 所以 `pgrep -x firefox` 会返回空——你以为浏览器关干净了，其实它还在跑，脚本的"进程检测"安全闸形同虚设。
+> 正确做法是把 `firefox`、`firefox-bin`、`firefox-esr` 都查一遍，脚本里已按此修正。
 
 ---
 

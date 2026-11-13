@@ -285,15 +285,23 @@ def edge_add_bookmark(doc, root, names, title, url):
 
 def browser_running():
     running = []
-    for name, pattern in (("Firefox", "firefox"), ("Edge", "msedge")):
-        try:
-            out = subprocess.run(
-                ["pgrep", "-x", pattern], capture_output=True, text=True
-            ).stdout.strip()
+    # 注意：Linux 上 Firefox 主进程的 comm 常常是 firefox-bin，
+    # 只匹配 "firefox" 会漏检，导致"以为关干净了其实还在跑"。
+    targets = (
+        ("Firefox", ("firefox", "firefox-bin", "firefox-esr")),
+        ("Edge", ("msedge", "microsoft-edge", "microsoft-edge-stable")),
+    )
+    for name, patterns in targets:
+        for pattern in patterns:
+            try:
+                out = subprocess.run(
+                    ["pgrep", "-x", pattern], capture_output=True, text=True
+                ).stdout.strip()
+            except FileNotFoundError:
+                continue
             if out:
                 running.append(name)
-        except FileNotFoundError:
-            pass
+                break
     return running
 
 
