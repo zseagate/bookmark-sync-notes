@@ -127,3 +127,25 @@ MIT
 - ✉️ 联系：zseagate@qq.com
 
 > 一个人做的硬核交付：代码开源、过程留痕、踩坑记录全公开。
+
+## 自动执行与桌面入口
+
+已把同步脚本接入系统定时任务，并放了桌面快捷方式。
+
+### 1. 定时任务（cron）
+
+```cron
+30 3 * * * /usr/bin/python3 /mnt/69FA-A272/project/fix_macmini/bookmark-sync-notes/scripts/bookmark_sync.py --edge-bookmarks /home/mac/.config/microsoft-edge/Default/Bookmarks --firefox-db /home/mac/.config/mozilla/firefox/lxdk0zca.default-release-1/places.sqlite >> /tmp/bookmark_sync_cron.log 2>&1
+```
+
+- 每天 03:30 执行（浏览器通常已关）。
+- 运行时检测到浏览器在运行会安全退出（exit 2），不会强制覆盖。
+- 日志：`/tmp/bookmark_sync_cron.log`。
+
+### 2. 桌面快捷方式
+
+- 系统入口：`/home/mac/.local/share/applications/bookmark-sync.desktop`
+- 桌面图标：`/home/mac/Desktop/bookmark-sync.desktop`
+- Exec 中直接带上 `--dry-run` / 真实参数的完整调用，双击后会在终端窗口里跑。
+
+> cron 与显示器的限制：终端类程序（如 Firefox）在无 DISPLAY 时直接跑脚本没问题，脚本只读与写库都是 headless-safe；但脚本在 Firefox 里**不会**做 UI 操作，纯库写入。
